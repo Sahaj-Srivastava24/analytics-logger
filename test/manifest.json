@@ -1,13 +1,9 @@
 {
-  "name": "Network Interceptor (Collector & Ads) - MV3",
+  "name": "Network Interceptor (Refresh, POST Body) - MV3",
   "version": "1.0",
   "manifest_version": 3,
-  "description": "Intercept only the current tab requests, show event names for collector events, and filter ads.",
-  "permissions": [
-    "webRequest",
-    "tabs", 
-    "storage"
-  ],
+  "description": "Intercept requests with a refresh button, show POST body in table, use radio filters.",
+  "permissions": ["webRequest", "tabs", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"

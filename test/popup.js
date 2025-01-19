@@ -1,102 +1,155 @@
+/***** popup.js *****/
+
+// We'll store all requests from the background
 let allRequests = [];
+// We'll track the current tab ID
+let currentTabId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Get the current active tab's ID
+  // 1. Find the current active tab
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (!tabs || !tabs.length) return;
-    const currentTabId = tabs[0].id;
+    currentTabId = tabs[0].id;
 
-    // 2. Ask background for requests relevant to this tab
-    chrome.runtime.sendMessage({ type: 'getRequestsForTab', tabId: currentTabId }, (response) => {
-      if (response && response.requests) {
-        allRequests = response.requests;
-        renderTable();
-      }
-    });
+    // 2. Initially load requests for this tab
+    loadRequests();
   });
 
-  // 3. Add filter event listeners
-  document.getElementById('filterCollector').addEventListener('change', renderTable);
-  document.getElementById('filterAds').addEventListener('change', renderTable);
+  // 3. Listen to radio-filter changes (All / Collector / Ads)
+  const radios = document.querySelectorAll('input[name="filterType"]');
+  radios.forEach((radio) => {
+    radio.addEventListener('change', renderTable);
+  });
 
-  // 4. Close details panel
+  // 4. Refresh button to re-fetch new requests
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', loadRequests);
+  }
+
+  // 5. Close the detail panel
   document.getElementById('close-details').addEventListener('click', () => {
     document.getElementById('query-details').style.display = 'none';
   });
 });
 
-// Renders the table with columns: Method, Event Name, Time
+// Fetch requests from the background script for the current tab
+function loadRequests() {
+  if (currentTabId == null) return;
+  chrome.runtime.sendMessage({ type: 'getRequestsForTab', tabId: currentTabId }, (response) => {
+    if (response && response.requests) {
+      allRequests = response.requests;
+      renderTable();
+    }
+  });
+}
+
+// Build the table based on the selected filter
 function renderTable() {
-  const filterCollector = document.getElementById('filterCollector').checked;
-  const filterAds = document.getElementById('filterAds').checked;
-
+  const selectedFilter = getSelectedFilter(); // "all", "collector", or "ads"
   const tableBody = document.getElementById('requests-body');
-  tableBody.innerHTML = ''; // clear old rows
+  tableBody.innerHTML = '';
 
-  // Filter logic
-  const filteredRequests = allRequests.filter((req) => {
+  // Adjust the middle column header text (optional)
+  const middleHeader = document.getElementById('middle-col-header');
+  if (selectedFilter === 'collector') {
+    middleHeader.textContent = 'Event Name (POST shows eventName)';
+  } else if (selectedFilter === 'ads') {
+    middleHeader.textContent = 'Base URL (POST shows eventName if any)';
+  } else {
+    middleHeader.textContent = 'Base URL / Event Name';
+  }
+
+  // Filter our stored requests
+  const filtered = allRequests.filter((req) => {
     const url = req.url.toLowerCase();
-    const matchesCollector = url.includes('/c/events');
-    const matchesAds = url.includes('/ads') || url.includes('gampad/ads');
+    const isCollector = url.includes('/c/events');
+    const isAds = url.includes('/ads') || url.includes('gampad/ads');
 
-    if (filterCollector && filterAds) {
-      return matchesCollector || matchesAds;
-    } else if (filterCollector) {
-      return matchesCollector;
-    } else if (filterAds) {
-      return matchesAds;
+    if (selectedFilter === 'collector') {
+      return isCollector;
+    } else if (selectedFilter === 'ads') {
+      return isAds;
     } else {
-      return true; // no filters
+      // 'all'
+      return true;
     }
   });
 
-  // Now create table rows
-  filteredRequests.forEach((req) => {
-    const { method, url, timeStamp } = req;
+  // Populate table rows
+  filtered.forEach((req) => {
+    const { method, url, timeStamp, eventName, bodyText } = req;
+
     const row = document.createElement('tr');
 
-    // Method cell
+    // 1) Method cell
     const methodTd = document.createElement('td');
     methodTd.textContent = method;
     row.appendChild(methodTd);
 
-    // Event Name cell (only for collector events)
-    // We'll parse the 'event=' query param if /c/events is in the URL
-    let eventName = 'N/A';
-    if (url.includes('/c/events')) {
-      try {
-        const parsed = new URL(url);
-        // The query param might be named 'event'
-        // If your param name is different, adjust accordingly
-        eventName = parsed.searchParams.get('event') || 'N/A';
-      } catch (e) {
-        eventName = 'N/A';
+    // 2) Middle cell
+    // For POST, we only show eventName (or "N/A" if none found)
+    // For GET, if it's a collector event, show eventName. Otherwise, show Base URL.
+    let middleValue;
+    if (method === 'POST') {
+      // Show only event name
+      middleValue = eventName || 'N/A';
+    } else {
+      // GET request
+      if (selectedFilter === 'collector') {
+        // if it's collector, we might have eventName
+        middleValue = eventName || 'N/A';
+      } else {
+        middleValue = extractBaseUrl(url);
       }
     }
-    const eventTd = document.createElement('td');
-    eventTd.textContent = eventName;
-    row.appendChild(eventTd);
 
-    // Time cell
+    const middleTd = document.createElement('td');
+    middleTd.textContent = middleValue;
+    row.appendChild(middleTd);
+
+    // 3) Time cell
     const timeTd = document.createElement('td');
     const dateObj = new Date(timeStamp);
     timeTd.textContent = dateObj.toLocaleTimeString();
     row.appendChild(timeTd);
 
-    // Clicking the row => show query params
+    // On row click => show details
+    // - If POST => show entire body in key-value or raw form
+    // - If GET => show query params
     row.addEventListener('click', () => {
-      showQueryParams(url);
+      if (method === 'POST') {
+        showPostBody(bodyText);
+      } else {
+        showQueryParams(url);
+      }
     });
 
     tableBody.appendChild(row);
   });
 }
 
-// Show query params in a bottom panel
+// Which radio filter is selected?
+function getSelectedFilter() {
+  const radio = document.querySelector('input[name="filterType"]:checked');
+  return radio ? radio.value : 'all';
+}
+
+// Extract the base URL (omit query params)
+function extractBaseUrl(fullUrl) {
+  try {
+    const parsed = new URL(fullUrl);
+    return parsed.origin + parsed.pathname;
+  } catch {
+    return fullUrl;
+  }
+}
+
+// Show query params in the detail panel (for GET requests)
 function showQueryParams(fullUrl) {
   const detailsDiv = document.getElementById('query-details');
-  const paramsBody = document.getElementById('query-params-body');
-  paramsBody.innerHTML = ''; // clear old content
+  const tableBody = document.getElementById('query-params-body');
+  tableBody.innerHTML = '';
 
   try {
     const parsedUrl = new URL(fullUrl);
@@ -108,13 +161,61 @@ function showQueryParams(fullUrl) {
       valTd.textContent = value;
       row.appendChild(keyTd);
       row.appendChild(valTd);
-      paramsBody.appendChild(row);
+      tableBody.appendChild(row);
     }
   } catch (err) {
     const row = document.createElement('tr');
     row.textContent = 'Could not parse query parameters.';
-    paramsBody.appendChild(row);
+    tableBody.appendChild(row);
   }
 
-  detailsDiv.style.display = 'block'; // show the panel
+  detailsDiv.style.display = 'block';
+}
+
+// Show the entire POST body in the detail panel
+function showPostBody(bodyText) {
+  const detailsDiv = document.getElementById('query-details');
+  const tableBody = document.getElementById('query-params-body');
+  tableBody.innerHTML = '';
+
+  if (!bodyText) {
+    const row = document.createElement('tr');
+    row.textContent = 'No body available.';
+    tableBody.appendChild(row);
+    detailsDiv.style.display = 'block';
+    return;
+  }
+
+  // Try to parse as JSON
+  try {
+    const parsed = JSON.parse(bodyText);
+    // If it's an object, iterate keys
+    if (typeof parsed === 'object' && parsed !== null) {
+      Object.keys(parsed).forEach((key) => {
+        const val = parsed[key];
+        const displayVal = Array.isArray(val) ? val.join(', ') : String(val);
+
+        const row = document.createElement('tr');
+        const keyTd = document.createElement('td');
+        keyTd.textContent = key;
+        const valTd = document.createElement('td');
+        valTd.textContent = displayVal;
+        row.appendChild(keyTd);
+        row.appendChild(valTd);
+        tableBody.appendChild(row);
+      });
+    } else {
+      // It's a primitive
+      const row = document.createElement('tr');
+      row.textContent = bodyText;
+      tableBody.appendChild(row);
+    }
+  } catch (err) {
+    // Not valid JSON, just show the raw text
+    const row = document.createElement('tr');
+    row.textContent = bodyText;
+    tableBody.appendChild(row);
+  }
+
+  detailsDiv.style.display = 'block';
 }
