@@ -3,26 +3,38 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Network Requests</title>
+  <title>Requests (Refresh & POST Body)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 1rem;
-      /* Increase width by ~100px (from 400px to ~500px) */
       width: 500px;
+      /* a bit wider */
     }
 
     h1 {
       margin-top: 0;
     }
 
-    .filters {
+    .controls {
       margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filters {
+      display: inline-block;
     }
 
     label {
       margin-right: 1rem;
+    }
+
+    button#refreshBtn {
+      padding: 6px 10px;
+      cursor: pointer;
     }
 
     /* Table styling */
@@ -53,7 +65,7 @@
       cursor: pointer;
     }
 
-    /* Query params panel */
+    /* Query params / body panel */
     #query-details {
       margin-top: 1rem;
       padding: 0.5rem;
@@ -90,35 +102,45 @@
 </head>
 
 <body>
-  <h1>Intercepted Requests (Current Tab)</h1>
+  <h1>Intercepted Requests</h1>
 
-  <div class="filters">
-    <label>
-      <input type="checkbox" id="filterCollector" />
-      Collector Events (/c/events)
-    </label>
-    <label>
-      <input type="checkbox" id="filterAds" />
-      Ads (/ads or gampad/ads)
-    </label>
+  <div class="controls">
+    <!-- Radio filter group -->
+    <div class="filters">
+      <label>
+        <input type="radio" name="filterType" value="all" checked />
+        All
+      </label>
+      <label>
+        <input type="radio" name="filterType" value="collector" />
+        Collector Events
+      </label>
+      <label>
+        <input type="radio" name="filterType" value="ads" />
+        Ads
+      </label>
+    </div>
+    <!-- Refresh button -->
+    <button id="refreshBtn">Refresh</button>
   </div>
 
   <table id="requests-table">
     <thead>
       <tr>
         <th>Method</th>
-        <th>Event Name</th>
+        <th id="middle-col-header">Base URL/Event Name/Body</th>
         <th>Time</th>
       </tr>
     </thead>
     <tbody id="requests-body">
-      <!-- Dynamic rows go here -->
+      <!-- dynamic rows -->
     </tbody>
   </table>
 
   <div id="query-details">
     <span class="close-btn" id="close-details">[Close]</span>
-    <h3>Query Parameters</h3>
+    <h3>Request Details</h3>
+    <!-- We'll reuse this for either query params or raw body -->
     <table id="query-params-table">
       <thead>
         <tr>
@@ -127,7 +149,7 @@
         </tr>
       </thead>
       <tbody id="query-params-body">
-        <!-- Dynamically populated -->
+        <!-- populated by JS -->
       </tbody>
     </table>
   </div>
