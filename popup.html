@@ -2,11 +2,11 @@
 <html>
 
 <head>
-  <title>Network Events</title>
+  <title>Captured Events</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 10px;
+      padding: 10px;
     }
 
     #events {
@@ -21,9 +21,17 @@
 </head>
 
 <body>
-  <h1>Collector Events</h1>
+  <h1>Captured Events</h1>
   <div id="events">No events captured yet.</div>
+  <button id="clear">Clear Events</button>
 </body>
-<script src="popup.js"></script>
+<script>
+  document.getElementById("clear").addEventListener("click", callback);
+  function callback() {
+    chrome.storage.local.clear(() => {
+      document.getElementById("events").textContent = "No events captured yet.";
+    });
+  }
+</script>
 
 </html>

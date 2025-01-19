@@ -3,8 +3,8 @@
   "name": "Network Event Collector",
   "version": "1.0",
   "permissions": [
-    "declarativeNetRequest",
     "webRequest",
+    "storage",
     "activeTab",
     "scripting"
   ],

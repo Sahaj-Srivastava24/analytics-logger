@@ -1,6 +1,12 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "newEvent") {
+document.addEventListener("DOMContentLoaded", function () {
+  chrome.storage.local.get("events", function (result) {
     const eventsDiv = document.getElementById("events");
-    eventsDiv.textContent += JSON.stringify(message.data, null, 2) + "\n\n";
-  }
+    if (result.events && result.events.length > 0) {
+      eventsDiv.textContent = result.events
+        .map(event => `URL: ${event.url}\nMethod: ${event.method}\nStatus: ${event.statusCode}\n\n`)
+        .join("");
+    } else {
+      eventsDiv.textContent = "No events captured yet.";
+    }
+  });
 });
