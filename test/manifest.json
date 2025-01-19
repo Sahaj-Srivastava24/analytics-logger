@@ -1,17 +1,17 @@
 {
-  "name": "Network Interceptor",
+  "name": "Network Interceptor (Collector & Ads) - MV3",
   "version": "1.0",
-  "description": "Intercept all HTTP requests and log them in the popup",
   "manifest_version": 3,
-
-  "permissions": ["webRequest", "webRequestBlocking", "storage"],
-
+  "description": "Intercept only the current tab requests, show event names for collector events, and filter ads.",
+  "permissions": [
+    "webRequest",
+    "tabs", 
+    "storage"
+  ],
   "host_permissions": ["<all_urls>"],
-
   "background": {
     "service_worker": "background.js"
   },
-
   "action": {
     "default_popup": "popup.html"
   }
