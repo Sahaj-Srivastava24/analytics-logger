@@ -1,111 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <title>Requests (Refresh & POST Body)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      width: 500px;
-      /* a bit wider */
-    }
-
-    h1 {
-      margin-top: 0;
-    }
-
-    .controls {
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .filters {
-      display: inline-block;
-    }
-
-    label {
-      margin-right: 1rem;
-    }
-
-    button#refreshBtn {
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-
-    /* Table styling */
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    thead {
-      background-color: #3498db;
-      /* a nice blue */
-      color: #fff;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 6px 10px;
-      font-size: 0.9rem;
-    }
-
-    tbody tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    tbody tr:hover {
-      background-color: #f0f0f0;
-      cursor: pointer;
-    }
-
-    /* Query params / body panel */
-    #query-details {
-      margin-top: 1rem;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      max-height: 200px;
-      overflow-y: auto;
-      display: none;
-      /* hidden by default */
-      background: #fafafa;
-    }
-
-    #query-details table {
-      width: 100%;
-      border: 1px solid #eee;
-      border-collapse: collapse;
-    }
-
-    #query-details th,
-    #query-details td {
-      border: 1px solid #eee;
-      padding: 4px 6px;
-    }
-
-    .close-btn {
-      float: right;
-      cursor: pointer;
-      color: #888;
-    }
-
-    .close-btn:hover {
-      color: #333;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Tracker</title>
+  <link rel="stylesheet" href="./styles/styles.css">
 </head>
 
 <body>
   <h1>Intercepted Requests</h1>
 
   <div class="controls">
-    <!-- Radio filter group -->
     <div class="filters">
       <label>
         <input type="radio" name="filterType" value="all" checked />
@@ -120,7 +26,6 @@
         Ads
       </label>
     </div>
-    <!-- Refresh button -->
     <button id="refreshBtn">Refresh</button>
   </div>
 
@@ -132,15 +37,12 @@
         <th>Time</th>
       </tr>
     </thead>
-    <tbody id="requests-body">
-      <!-- dynamic rows -->
-    </tbody>
+    <tbody id="requests-body"></tbody>
   </table>
 
   <div id="query-details">
     <span class="close-btn" id="close-details">[Close]</span>
     <h3>Request Details</h3>
-    <!-- We'll reuse this for either query params or raw body -->
     <table id="query-params-table">
       <thead>
         <tr>
@@ -148,13 +50,11 @@
           <th>Value</th>
         </tr>
       </thead>
-      <tbody id="query-params-body">
-        <!-- populated by JS -->
-      </tbody>
+      <tbody id="query-params-body"></tbody>
     </table>
   </div>
 
-  <script src="popup.js"></script>
+  <script type="module" src="./scripts/index.js"></script>
 </body>
 
 </html>
