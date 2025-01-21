@@ -14,7 +14,8 @@ export function renderTable(requests) {
   const filteredRequests = requests.filter((req) => {
     const url = req.url.toLowerCase();
     return filter === 'collector' ? url.includes('/c/events') :
-           filter === 'ads' ? url.includes('/ads') || url.includes('gampad/ads') :
+           filter === 'ads' ? (url.includes('https://securepubads.g.doubleclick.net/gampad/ads') || 
+                               url.includes('https://googleads.g.doubleclick.net/pagead/ads')) :
            true;
   });
 
