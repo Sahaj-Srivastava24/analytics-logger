@@ -9,36 +9,22 @@
 </head>
 
 <body>
-  <h1>Intercepted Requests</h1>
-  
   <div id="app">
     <div class="network-logger">
-      <!-- Filters Section -->
-      <section class="filters-section">
-        <div class="filter-group">
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="filterType" value="all" checked />
-              <span>All</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="filterType" value="collector" />
-              <span>Collector Events</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="filterType" value="ads" />
-              <span>Ads</span>
-            </label>
-          </div>
-          <button id="refreshBtn" class="clear-button">Refresh</button>
-        </div>
+      <!-- Header Section -->
+      <section class="header-section">
+        <h1>Analytics Logger</h1>
+        <button id="refreshBtn" class="refresh-button">
+          <!-- <i class="fas fa-sync-alt"></i> -->
+          ↻
+        </button>
       </section>
   
-      <!-- Records Section -->
-      <section class="records-section">
+      <!-- Top Table -->
+      <section class="records-table top-table">
         <div class="records-header">
           <div class="col method">Method</div>
-          <div class="col name">Base URL / Event Name / Body</div>
+          <div class="col name">Event Name</div>
           <div class="col time">Time</div>
         </div>
         <div class="records-container" id="requests-body">
@@ -46,19 +32,14 @@
         </div>
       </section>
   
-      <!-- Details Section -->
-      <section class="details-section" id="query-details">
-        <div class="details-tabs">
-          <button class="tab-button active">Request Details</button>
+      <!-- Bottom Table -->
+      <section class="records-table bottom-table">
+        <div class="records-header">
+          <div class="col key">Key</div>
+          <div class="col value">Value</div>
         </div>
-        <div class="details-content">
-          <div class="details-header">
-            <h3>Request Parameters</h3>
-            <button class="close-button" id="close-details">×</button>
-          </div>
-          <div class="details-group" id="query-params-body">
-            <!-- Parameters will be inserted here via JS -->
-          </div>
+        <div class="records-container" id="details-body">
+          <!-- Details will be inserted here via JS -->
         </div>
       </section>
     </div>
