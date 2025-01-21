@@ -4,7 +4,7 @@
   "manifest_version": 3,
   "description": "Example DevTools Extension",
 
-  "permissions": ["webRequest", "tabs", "storage"],
+  "permissions": ["webRequest", "tabs", "storage", "webNavigation"],
 
   "host_permissions": ["<all_urls>"],
 

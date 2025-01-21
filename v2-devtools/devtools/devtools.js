@@ -17,5 +17,3 @@ chrome.devtools.panels.create(
     console.log("Custom Ads DevTools panel created!", panel);
   }
 );
-
-// 
