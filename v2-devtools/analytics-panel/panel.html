@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Intercepted Requests</title>
+  <!-- Link to your CSS file -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <h1>Intercepted Requests</h1>
+  
+  <div id="app">
+    <div class="network-logger">
+      <!-- Filters Section -->
+      <section class="filters-section">
+        <div class="filter-group">
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="filterType" value="all" checked />
+              <span>All</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="filterType" value="collector" />
+              <span>Collector Events</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="filterType" value="ads" />
+              <span>Ads</span>
+            </label>
+          </div>
+          <button id="refreshBtn" class="clear-button">Refresh</button>
+        </div>
+      </section>
+  
+      <!-- Records Section -->
+      <section class="records-section">
+        <div class="records-header">
+          <div class="col method">Method</div>
+          <div class="col name">Base URL / Event Name / Body</div>
+          <div class="col time">Time</div>
+        </div>
+        <div class="records-container" id="requests-body">
+          <!-- Records will be inserted here via JS -->
+        </div>
+      </section>
+  
+      <!-- Details Section -->
+      <section class="details-section" id="query-details">
+        <div class="details-tabs">
+          <button class="tab-button active">Request Details</button>
+        </div>
+        <div class="details-content">
+          <div class="details-header">
+            <h3>Request Parameters</h3>
+            <button class="close-button" id="close-details">×</button>
+          </div>
+          <div class="details-group" id="query-params-body">
+            <!-- Parameters will be inserted here via JS -->
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Your JS scripts, e.g., panel.js or index.js, can go here -->
+  <script type="module" src="./panel.js"></script>
+</body>
+
+</html>
