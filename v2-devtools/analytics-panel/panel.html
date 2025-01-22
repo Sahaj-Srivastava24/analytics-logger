@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Intercepted Requests</title>
+  <!-- Link to your CSS file -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div class="network-logger">
+      <!-- Header Section -->
+      <section class="header-section">
+        <h1>Analytics Logger</h1>
+        <button id="refreshBtn" class="refresh-button">
+          <!-- <i class="fas fa-sync-alt"></i> -->
+          ↻
+        </button>
+      </section>
+  
+      <!-- Top Table -->
+      <section class="records-table top-table">
+        <div class="records-header">
+          <div class="col method">Method</div>
+          <div class="col name">Event Name</div>
+          <div class="col time">Time</div>
+        </div>
+        <div class="records-container" id="requests-body">
+          <!-- Records will be inserted here via JS -->
+        </div>
+      </section>
+  
+      <!-- Bottom Table -->
+      <section class="records-table bottom-table">
+        <div class="records-header">
+          <div class="col key">Key</div>
+          <div class="col value">Value</div>
+        </div>
+        <div class="records-container" id="details-body">
+          <!-- Details will be inserted here via JS -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Your JS scripts, e.g., panel.js or index.js, can go here -->
+  <script type="module" src="./panel.js"></script>
+</body>
+
+</html>

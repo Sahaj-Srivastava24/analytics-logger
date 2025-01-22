@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ads Tracker</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <div id="app">
+    <div class="tracker-container">
+      <!-- Header Section -->
+      <section class="header-section">
+        <h1>Ads Tracker</h1>
+        <button id="refreshBtn" class="refresh-button" title="Refresh Data">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </section>
+
+      <!-- Tables Container -->
+      <section class="tables-container">
+        <!-- Main Table Section -->
+        <div class="table-section">
+          <table class="main-table">
+            <thead>
+              <tr>
+                <th>Pos Value</th>
+                <th>Tags</th>
+                <th>Prev SCP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic rows will be injected here by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Prev SCP Details Table Section -->
+        <div class="table-section">
+          <table class="details-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Detailed Prev SCP information will be injected here by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Include the adapted JavaScript file -->
+  <script src="./panel.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "My Extension",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "Example DevTools Extension",
+
+  "permissions": ["webRequest", "tabs", "storage", "webNavigation"],
+
+  "host_permissions": ["<all_urls>"],
+
+  "background": {
+    "service_worker": "./scripts/background.js"
+  },
+
+  "devtools_page": "./devtools/devtools.html"
+}
