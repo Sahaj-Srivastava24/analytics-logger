@@ -20,18 +20,15 @@ The extension tracks events using two primary methods:
 - Events are tracked via query parameters in the request URL.
 - Example usage:
   - **Quizzop Tracking:**
-    ![Quizzop Example](examples/collector-quizzop.png)
     - Tracks `/c/events` endpoint, extracting event name and data from query parameters.
   
   - **Gamezop Tracking:**
-    ![Gamezop Example](examples/collector-gamezop.png)
     - Similar tracking for Gamezop products using query parameters.
 
 ### 2. POST Request Tracking
 - Events are sent as POST requests with data included in the request body instead of query parameters.
 - Example usage:
   - **Gamezop POST Tracking:**
-    ![Gamezop POST Example](examples/collector-post-gamezop.png)
     - Utilizes the new analytics SDK for enhanced tracking capabilities.
 
 ## Ads Tracking
@@ -47,8 +44,10 @@ The Ads Tracker panel provides insights into ad performance and tracking by moni
 
 View the screenshots for reference:
 
-- [Analytics Logger](examples/analytics.png)
-- [Ads Tracking](examples/ads.png)
+![Analytics Logger](examples/analytics.png)
+
+
+![Ads Tracking](examples/ads.png)
 
 
 ## Installation
