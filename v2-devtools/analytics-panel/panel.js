@@ -3,33 +3,37 @@ import { renderTable } from '../scripts/render.js';
 
 let allRequests = [];
 let currentTabId = null;
+let refreshInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // In a DevTools panel, get the tabId from devtools API:
   currentTabId = chrome.devtools.inspectedWindow.tabId;
 
-  // Initially load requests for this tab
-  loadRequests(currentTabId, (requests) => {
-    allRequests = requests;
-    console.log("allRequests", allRequests);
-    renderTable(allRequests);
-  });
+  const refreshRequests = () => {
+    loadRequests(currentTabId, (requests) => {
+      allRequests = requests;
+      console.log("allRequests", allRequests);
+      renderTable(allRequests);
+    });
+  };
 
-  // Add event listeners for filter radios
+  refreshRequests();
+
+  refreshInterval = setInterval(refreshRequests, 1000);
+
   document.querySelectorAll('input[name="filterType"]').forEach((radio) => {
     radio.addEventListener('change', () => renderTable(allRequests));
   });
 
-  // Refresh button
-  document.getElementById('refreshBtn')?.addEventListener('click', () => {
-    loadRequests(currentTabId, (requests) => {
-      allRequests = requests;
-      renderTable(allRequests);
-    });
-  });
+  document.getElementById('refreshBtn')?.addEventListener('click', refreshRequests);
 
-  // Close details panel
   document.getElementById('close-details').addEventListener('click', () => {
     document.getElementById('query-details').style.display = 'none';
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
   });
 });

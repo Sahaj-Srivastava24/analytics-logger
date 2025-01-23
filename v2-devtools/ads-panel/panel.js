@@ -3,7 +3,7 @@ let intervalId;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadAdData();
-  intervalId = setInterval(loadAdData, 500);
+  intervalId = setInterval(loadAdData, 1000);
 });
 
 window.addEventListener('unload', () => {
