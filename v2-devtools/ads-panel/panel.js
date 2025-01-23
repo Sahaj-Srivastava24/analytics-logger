@@ -31,16 +31,31 @@ function parseRequests(requests) {
 
   requests.forEach((req) => {
     let urlObj;
+    let params = new URLSearchParams();
+
     try {
       urlObj = new URL(req.url);
     } catch (e) {
+      console.error("Invalid URL:", req.url);
       return;
     }
-    const urlParams = urlObj.searchParams;
-    const pathname = urlObj.pathname;
+
+    if (req.method === "POST" && req.bodyText) {
+      try {
+        const postData = JSON.parse(req.bodyText);
+        Object.entries(postData).forEach(([key, value]) => {
+          params.set(key, value);
+        });
+      } catch (e) {
+        console.error("Failed to parse POST bodyText:", req.bodyText);
+        return;
+      }
+    } else {
+      params = urlObj.searchParams;
+    }
 
     // Extract prev_scp and parse pos from it
-    const prevScp = urlParams.get("prev_scp") || "N/A";
+    const prevScp = params.get("prev_scp") || "N/A";
     let pos = "N/A";
 
     if (prevScp !== "N/A") {
@@ -51,15 +66,15 @@ function parseRequests(requests) {
       prevScpMap.set(pos, prevScp);
     }
 
-    if (pathname.includes("/ads")) {
+    if (req.method === "GET" && urlObj.pathname.includes("/ads")) {
       if (!adsMap.has(pos)) {
         adsMap.set(pos, { pos });
       }
-    } else {
-      const event = urlParams.get("event");
+    } else if (req.method === "POST" || req.method === "GET") {
+      const event = params.get("event");
       if (event && ALL_EVENT_TYPES.includes(event)) {
-        const adSpot = urlParams.get("ad-spot") || "N/A";
-        const adDemandSource = urlParams.get("ad-demand-source") || "N/A";
+        const adSpot = params.get("ad-spot") || "N/A";
+        const adDemandSource = params.get("ad-demand-source") || "N/A";
 
         let unifiedKey = `${adSpot}-${adDemandSource}`;
         if (adDemandSource.toLowerCase().includes("gam") && adSpot !== "N/A" && adsMap.has(adSpot)) {
@@ -74,7 +89,7 @@ function parseRequests(requests) {
             "ad-loaded": false,
             "ad-failed": false,
             "ad-delayed": false,
-            "Prev SCP": "N/A"  // Default to "N/A" initially
+            "Prev SCP": "N/A"
           });
         }
 
@@ -92,7 +107,6 @@ function parseRequests(requests) {
 
   return Array.from(collectorMap.values());
 }
-
 
 function renderMainTable(data) {
   const mainTableBody = document.querySelector(".main-table tbody");
