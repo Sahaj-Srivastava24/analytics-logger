@@ -2,7 +2,7 @@
 let interceptedRequests = [];
 
 // Toggle this as you like
-let clearOnRefresh = true;
+let clearOnRefresh = false;
 
 const relevantPatterns = [
   "securepubads.g.doubleclick.net/gampad/ads",
