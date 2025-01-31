@@ -101,6 +101,7 @@ body {
 /* DIVIDER: a small horizontal bar that user drags */
 .divider {
   flex: 0 0 10px;
+  margin: 0 1rem;
   background-color: var(--border-color);
   cursor: row-resize;
   position: relative;
