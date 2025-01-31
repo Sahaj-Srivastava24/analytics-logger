@@ -22,7 +22,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       return;
     }
 
-    console.log("onBeforeRequest", details);
+    // console.log("onBeforeRequest", details);
 
     let bodyText = null;
     if (method === "POST" && requestBody) {
@@ -62,7 +62,7 @@ chrome.webRequest.onBeforeRequest.addListener(
               eventName = formDataObj.event[0];
             }
           } catch (_) {
-            console.log("Error parsing event name", err);
+            console.error("Error parsing event name", err);
           }
         }
       }
@@ -108,7 +108,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       (req) => req.tabId === message.tabId
     );
 
-    console.log("Intercepted requests for tab:", relevant);
+    // console.log("Intercepted requests for tab:", relevant);
     sendResponse({ requests: relevant });
   }
 });

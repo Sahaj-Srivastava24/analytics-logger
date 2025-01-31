@@ -37,6 +37,7 @@ body {
   flex-direction: column;
   height: calc(100vh - 2rem);
   overflow: hidden;
+  position: relative;
 }
 
 /* Header Section */
@@ -47,12 +48,33 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .header-section h1 {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-color);
+}
+
+.filter-container {
+  flex: 1;
+  max-width: 300px;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-background);
+  color: var(--text-color);
+  font-size: 0.875rem;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
 }
 
 .refresh-button {
@@ -87,15 +109,39 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-bottom: 1px solid var(--border-color);
 }
 
 .top-table {
   flex: 1;
+  min-height: 100px;
 }
 
 .bottom-table {
   height: 40%;
+  min-height: 100px;
+}
+
+/* Resizable Divider */
+.divider {
+  height: 10px;
+  background-color: var(--border-color);
+  cursor: row-resize;
+  position: relative;
+}
+
+.divider:hover {
+  background-color: var(--primary-color);
+}
+
+.divider::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 2px;
+  background-color: var(--text-muted);
 }
 
 .records-header {
@@ -121,10 +167,16 @@ body {
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   font-size: 0.875rem;
+  transition: background-color 0.2s;
 }
 
 .record:hover {
   background-color: var(--hover-color);
+}
+
+.record.selected {
+  background-color: var(--hover-color);
+  border-left: 3px solid var(--primary-color);
 }
 
 .col {
@@ -177,10 +229,4 @@ body {
   flex: 1;
   color: var(--text-muted);
   word-break: break-all;
-}
-
-/* Selected state */
-.record.selected {
-  background-color: var(--hover-color);
-  border-left: 3px solid var(--primary-color);
 }

@@ -43,7 +43,7 @@ chrome.webRequest.onBeforeRequest.addListener(
               eventName = formDataObj.event[0];
             }
           } catch (_) {
-            console.log('Error parsing event name', err);
+            console.error('Error parsing event name', err);
           }
         }
       }

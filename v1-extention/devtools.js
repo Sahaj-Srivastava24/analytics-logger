@@ -40,7 +40,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
             eventName = formDataObj.event[0];
           }
         } catch (err2) {
-          console.log('Error parsing event name', err1, err2);
+          console.error('Error parsing event name', err1, err2);
         }
       }
     }
@@ -159,7 +159,7 @@ function showRequestDetails(req) {
       paramsBody.appendChild(row);
     }
   } catch (err) {
-    console.log('No valid URL to parse');
+    console.error('No valid URL to parse');
   }
 
   // If body is JSON, try to parse

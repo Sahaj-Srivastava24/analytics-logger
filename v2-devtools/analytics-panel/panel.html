@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Intercepted Requests</title>
-  <!-- Link to your CSS file -->
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
@@ -14,12 +13,12 @@
       <!-- Header Section -->
       <section class="header-section">
         <h1>Analytics Logger</h1>
-        <button id="refreshBtn" class="refresh-button">
-          <!-- <i class="fas fa-sync-alt"></i> -->
-          ↻
-        </button>
+        <div class="filter-container">
+          <input type="text" id="eventFilter" placeholder="Filter events..." class="filter-input" />
+        </div>
+        <button id="refreshBtn" class="refresh-button">↻</button>
       </section>
-  
+
       <!-- Top Table -->
       <section class="records-table top-table">
         <div class="records-header">
@@ -31,7 +30,10 @@
           <!-- Records will be inserted here via JS -->
         </div>
       </section>
-  
+
+      <!-- Resizable Divider -->
+      <div class="divider" id="tableDivider"></div>
+
       <!-- Bottom Table -->
       <section class="records-table bottom-table">
         <div class="records-header">
@@ -45,7 +47,6 @@
     </div>
   </div>
 
-  <!-- Your JS scripts, e.g., panel.js or index.js, can go here -->
   <script type="module" src="./panel.js"></script>
 </body>
 
