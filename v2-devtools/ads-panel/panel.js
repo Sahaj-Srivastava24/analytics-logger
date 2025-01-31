@@ -1,90 +1,106 @@
+// panel.js
+
+import { loadRequests } from '../scripts/utils.js';
+
 const ALL_EVENT_TYPES = ["ad-requested", "ad-loaded", "ad-failed", "ad-delayed"];
-let intervalId;
+let intervalId = null;
+let selectedAdKey = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  initResizableDivider();
   loadAdData();
   intervalId = setInterval(loadAdData, 1000);
+  const refreshBtn = document.getElementById("refreshBtn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", loadAdData);
+  }
 });
 
-window.addEventListener('unload', () => {
-  clearInterval(intervalId);
+window.addEventListener("beforeunload", () => {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
 });
-
-document.getElementById("refreshBtn").addEventListener("click", loadAdData);
 
 function getActiveTabId(callback) {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    const activeTab = tabs.length ? tabs[0] : null;
-    callback(activeTab ? activeTab.id : null);
+  // if 'chrome' or 'chrome.tabs' is undefined, the context is likely gone
+  if (!chrome || !chrome.tabs) {
+    return;
+  }
+  try {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs.length ? tabs[0] : null;
+      callback(activeTab ? activeTab.id : null);
+    });
+  } catch (err) {
+    // This catches the "Extension context invalidated" error
+    if (err.message && err.message.includes("Extension context invalidated")) {
+      // Panel or extension was closed or reloaded. You can safely ignore or handle it.
+    }
+  }
+}
+
+
+function loadAdData() {
+  getActiveTabId((tabId) => {
+    if (!tabId) return;
+    loadRequests(tabId, (requests) => {
+      if (!requests) return;
+      const parsedData = parseRequests(requests);
+      renderMainTable(parsedData);
+    });
   });
 }
 
-function getRequestsForTab(tabId, callback) {
-  if (!tabId) return callback(null);
-  chrome.runtime.sendMessage({ type: "getRequestsForTab", tabId }, callback);
-}
-
 function parseRequests(requests) {
-  const adsMap = new Map();
   const collectorMap = new Map();
+  const adsMap = new Map();
   const prevScpMap = new Map();
 
   requests.forEach((req) => {
     let urlObj;
     let params = new URLSearchParams();
-
     try {
       urlObj = new URL(req.url);
-    } catch (e) {
-      console.error("Invalid URL:", req.url);
+    } catch {
       return;
     }
-
     if (req.method === "POST" && req.bodyText) {
       try {
         const postData = JSON.parse(req.bodyText);
-        Object.entries(postData).forEach(([key, value]) => {
-          params.set(key, value);
+        Object.entries(postData).forEach(([k, v]) => {
+          params.set(k, v);
         });
-      } catch (e) {
-        console.error("Failed to parse POST bodyText:", req.bodyText);
+      } catch {
         return;
       }
     } else {
       params = urlObj.searchParams;
     }
-
-    // Extract prev_scp and parse pos from it
     const prevScp = params.get("prev_scp") || "N/A";
     let pos = "N/A";
-
     if (prevScp !== "N/A") {
-      const prevScpParams = new URLSearchParams(prevScp);
-      pos = prevScpParams.get("pos") || "N/A";
-
-      // Store prev_scp for future mapping
+      const p = new URLSearchParams(prevScp);
+      pos = p.get("pos") || "N/A";
       prevScpMap.set(pos, prevScp);
     }
-
     if (req.method === "GET" && urlObj.pathname.includes("/ads")) {
-      if (!adsMap.has(pos)) {
-        adsMap.set(pos, { pos });
-      }
-    } else if (req.method === "POST" || req.method === "GET") {
+      adsMap.set(pos, { pos });
+    } else {
       const event = params.get("event");
       if (event && ALL_EVENT_TYPES.includes(event)) {
         const adSpot = params.get("ad-spot") || "N/A";
-        const adDemandSource = params.get("ad-demand-source") || "N/A";
-
-        let unifiedKey = `${adSpot}-${adDemandSource}`;
-        if (adDemandSource.toLowerCase().includes("gam") && adSpot !== "N/A" && adsMap.has(adSpot)) {
+        const adSource = params.get("ad-demand-source") || "N/A";
+        let unifiedKey = `${adSpot}-${adSource}`;
+        if (adSource.toLowerCase().includes("gam") && adSpot !== "N/A" && adsMap.has(adSpot)) {
           unifiedKey = adSpot;
         }
-
         if (!collectorMap.has(unifiedKey)) {
           collectorMap.set(unifiedKey, {
+            unifiedKey,
             "Ad Slot": adSpot,
-            "Ad Demand Source": adDemandSource,
+            "Ad Demand Source": adSource,
             "ad-requested": false,
             "ad-loaded": false,
             "ad-failed": false,
@@ -92,11 +108,8 @@ function parseRequests(requests) {
             "Prev SCP": "N/A"
           });
         }
-
         collectorMap.get(unifiedKey)[event] = true;
-
-        // Add Prev SCP only if ad-demand-source contains "gam"
-        if (adDemandSource.toLowerCase().includes("gam") && prevScpMap.has(adSpot)) {
+        if (adSource.toLowerCase().includes("gam") && prevScpMap.has(adSpot)) {
           collectorMap.get(unifiedKey)["Prev SCP"] = prevScpMap.get(adSpot);
         } else {
           collectorMap.get(unifiedKey)["Prev SCP"] = "";
@@ -104,7 +117,6 @@ function parseRequests(requests) {
       }
     }
   });
-
   return Array.from(collectorMap.values());
 }
 
@@ -112,52 +124,54 @@ function renderMainTable(data) {
   const mainTableBody = document.querySelector(".main-table tbody");
   if (!mainTableBody) return;
   mainTableBody.innerHTML = "";
-
   data.forEach((row) => {
     const tr = document.createElement("tr");
-
-    const posTd = document.createElement("td");
-    posTd.textContent = row["Ad Slot"];
-    tr.appendChild(posTd);
-
-    const sourceTd = document.createElement("td");
-    sourceTd.textContent = row["Ad Demand Source"];
-    tr.appendChild(sourceTd);
-
+    if (row.unifiedKey && row.unifiedKey === selectedAdKey) {
+      tr.classList.add("selected");
+    }
+    const slotTd = document.createElement("td");
+    slotTd.textContent = row["Ad Slot"];
+    tr.appendChild(slotTd);
+    const srcTd = document.createElement("td");
+    srcTd.textContent = row["Ad Demand Source"];
+    tr.appendChild(srcTd);
     const tagsTd = document.createElement("td");
     tagsTd.classList.add("tags-cell");
     ALL_EVENT_TYPES.forEach((evt) => {
       const tagSpan = document.createElement("span");
       tagSpan.classList.add("tag");
+      tagSpan.textContent = evt.replace("ad-", "").replace("-", " ").toUpperCase();
       if (row[evt]) {
         tagSpan.classList.add("success");
       } else {
         tagSpan.classList.add("error");
       }
-      tagSpan.textContent = evt.replace("ad-", "").replace("-", " ").toUpperCase();
       tagsTd.appendChild(tagSpan);
     });
     tr.appendChild(tagsTd);
-
     const prevScpTd = document.createElement("td");
-    if (row["Prev SCP"] && row["Prev SCP"] !== "N/A" && row["Prev SCP"] !== "no prev_scp") {
-      const viewButton = document.createElement("span");
-      viewButton.classList.add("tag", "view-details");
-      viewButton.textContent = "View Details";
-      viewButton.title = "View Prev SCP Details";
-      viewButton.addEventListener("click", () => {
+    if (row["Prev SCP"] && row["Prev SCP"] !== "N/A") {
+      const viewBtn = document.createElement("span");
+      viewBtn.classList.add("tag", "view-details");
+      viewBtn.textContent = "View Details";
+      viewBtn.title = "View Prev SCP Details";
+      viewBtn.addEventListener("click", () => {
         populateDetailsTable(row["Ad Slot"], row["Ad Demand Source"], row["Prev SCP"]);
       });
-      prevScpTd.appendChild(viewButton);
+      prevScpTd.appendChild(viewBtn);
     } else {
-      const span = document.createElement("span");
-      span.classList.add("tag", "error");
-      span.textContent = row["Prev SCP"];
-      if (!span.textContent || span.textContent === "N/A") span.textContent = "N/A";
-      prevScpTd.appendChild(span);
+      const noScpSpan = document.createElement("span");
+      noScpSpan.classList.add("tag", "error");
+      noScpSpan.textContent = row["Prev SCP"] || "N/A";
+      prevScpTd.appendChild(noScpSpan);
     }
     tr.appendChild(prevScpTd);
-
+    tr.addEventListener("click", () => {
+      const oldSelected = mainTableBody.querySelector("tr.selected");
+      if (oldSelected) oldSelected.classList.remove("selected");
+      tr.classList.add("selected");
+      selectedAdKey = row.unifiedKey;
+    });
     mainTableBody.appendChild(tr);
   });
 }
@@ -166,8 +180,7 @@ function populateDetailsTable(adSlot, adDemandSource, prevScpString) {
   const detailsTableBody = document.querySelector(".details-table tbody");
   if (!detailsTableBody) return;
   detailsTableBody.innerHTML = "";
-
-  if (!prevScpString || prevScpString === "N/A" || prevScpString === "no prev_scp") {
+  if (!prevScpString || prevScpString === "N/A") {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = 2;
@@ -177,10 +190,9 @@ function populateDetailsTable(adSlot, adDemandSource, prevScpString) {
     detailsTableBody.appendChild(tr);
     return;
   }
-
   const params = new URLSearchParams(prevScpString);
-  const detailEntries = Array.from(params.entries());
-  if (detailEntries.length === 0) {
+  const entries = Array.from(params.entries());
+  if (entries.length === 0) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = 2;
@@ -190,26 +202,53 @@ function populateDetailsTable(adSlot, adDemandSource, prevScpString) {
     detailsTableBody.appendChild(tr);
     return;
   }
-
-  detailEntries.forEach(([key, value]) => {
+  entries.forEach(([key, value]) => {
     const tr = document.createElement("tr");
-    const paramTd = document.createElement("td");
-    paramTd.textContent = key;
-    tr.appendChild(paramTd);
-
-    const valueTd = document.createElement("td");
-    valueTd.textContent = value;
-    tr.appendChild(valueTd);
+    const kTd = document.createElement("td");
+    kTd.textContent = key;
+    tr.appendChild(kTd);
+    const vTd = document.createElement("td");
+    vTd.textContent = value;
+    tr.appendChild(vTd);
     detailsTableBody.appendChild(tr);
   });
 }
 
-function loadAdData() {
-  getActiveTabId((tabId) => {
-    getRequestsForTab(tabId, (response) => {
-      if (!response || !response.requests) return;
-      const parsedData = parseRequests(response.requests);
-      renderMainTable(parsedData);
-    });
+function initResizableDivider() {
+  const divider = document.getElementById('tableDivider');
+  if (!divider) return;
+  const topTable = document.querySelector('.top-table');
+  const bottomTable = document.querySelector('.bottom-table');
+  if (!topTable || !bottomTable) return;
+
+  let isDragging = false;
+  let startY = 0;
+  let startTopHeight = 0;
+
+  divider.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDragging = true;
+    startY = e.clientY;
+    startTopHeight = topTable.offsetHeight;
+    document.body.style.cursor = 'row-resize';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const delta = e.clientY - startY;
+    const newHeight = startTopHeight + delta;
+    const containerRect = divider.parentElement.getBoundingClientRect();
+    const containerHeight = containerRect.height;
+    const minHeight = 100; 
+    const maxHeight = containerHeight - 100;
+    const finalHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
+    topTable.style.height = finalHeight + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      document.body.style.cursor = '';
+    }
   });
 }

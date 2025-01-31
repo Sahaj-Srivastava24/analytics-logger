@@ -12,7 +12,6 @@
 <body>
   <div id="app">
     <div class="tracker-container">
-      <!-- Header Section -->
       <section class="header-section">
         <h1>Ads Tracker</h1>
         <button id="refreshBtn" class="refresh-button" title="Refresh Data">
@@ -20,27 +19,29 @@
         </button>
       </section>
 
-      <!-- Tables Container -->
       <section class="tables-container">
-        <!-- Main Table Section -->
-        <div class="table-section">
+        <!-- Top table (initially fixed height) -->
+        <div class="table-section top-table">
           <table class="main-table">
             <thead>
               <tr>
                 <th>Pos Value</th>
                 <th>Ad Demand Source</th>
                 <th>Tags</th>
-                <th>Prev SCP</th>
+                <th>More Details - GAM only</th>
               </tr>
             </thead>
             <tbody>
-              <!-- Dynamic rows will be injected here by JavaScript -->
+              <!-- Populated by JS -->
             </tbody>
           </table>
         </div>
 
-        <!-- Prev SCP Details Table Section -->
-        <div class="table-section">
+        <!-- Divider -->
+        <div class="divider" id="tableDivider"></div>
+
+        <!-- Bottom table (fills remaining space) -->
+        <div class="table-section bottom-table">
           <table class="details-table">
             <thead>
               <tr>
@@ -49,16 +50,14 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Detailed Prev SCP information will be injected here by JavaScript -->
+              <!-- Populated by JS -->
             </tbody>
           </table>
         </div>
       </section>
     </div>
   </div>
-
-  <!-- Include the adapted JavaScript file -->
-  <script src="./panel.js"></script>
+  <script type="module" src="./panel.js"></script>
 </body>
 
 </html>

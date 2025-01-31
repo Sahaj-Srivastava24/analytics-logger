@@ -39,7 +39,6 @@ body {
   overflow: hidden;
 }
 
-/* Header Section */
 .header-section {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
@@ -82,33 +81,62 @@ body {
   transform: rotate(180deg);
 }
 
-/* Tables Container */
+/* FLEX CONTAINER FOR TABLES (vertical) */
 .tables-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   flex: 1;
-  /* Ensures the tables take up available space */
   overflow: hidden;
 }
 
-/* Individual Table Sections */
-.table-section {
-  flex: 1;
-  /* Each table takes equal width */
-  padding: 0 1rem;
+/* TOP TABLE: remove flex:1; set initial height */
+.top-table {
+  flex: 0 0 auto;
+  height: 300px;
+  /* initial height; can be changed by JS */
+  min-height: 100px;
   overflow: auto;
-  /* Enables vertical scroll */
 }
 
-/* Main Table Styling */
+/* DIVIDER: a small horizontal bar that user drags */
+.divider {
+  flex: 0 0 10px;
+  background-color: var(--border-color);
+  cursor: row-resize;
+  position: relative;
+}
+
+.divider:hover {
+  background-color: var(--primary-color);
+}
+
+.divider::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 2px;
+  background-color: var(--text-muted);
+}
+
+/* BOTTOM TABLE: fill remaining space */
+.bottom-table {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.table-section {
+  padding: 0 1rem;
+}
+
 .main-table,
 .details-table {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--secondary-background);
   table-layout: fixed;
-  /* Ensures equal column widths */
 }
 
 .main-table thead,
@@ -138,7 +166,6 @@ body {
 .main-table tbody tr,
 .details-table tbody tr {
   height: 50px;
-  /* Fixed row height */
 }
 
 .main-table tbody tr:nth-child(even),
@@ -151,7 +178,6 @@ body {
   background-color: var(--hover-color);
 }
 
-/* Tags Styling */
 .tags-cell {
   display: flex;
   flex-wrap: wrap;
@@ -187,10 +213,9 @@ body {
 }
 
 .tag.view-details:hover {
-  background-color: darken(var(--primary-color), 10%);
+  background-color: #287ade;
 }
 
-/* Responsive Adjustments */
 @media (max-width: 768px) {
   .modal-content {
     width: 90%;
@@ -215,8 +240,6 @@ body {
 }
 
 .main-table td {
-  -ms-word-break: break-all;
-  word-break: break-all;
   word-break: break-word;
   text-align: center;
   padding: 8px;
@@ -225,14 +248,7 @@ body {
 .tags-cell {
   display: flex;
   gap: 5px;
-  /* Adds spacing between tags */
   justify-content: center;
-}
-
-.tag {
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-weight: bold;
 }
 
 .error {
